@@ -8,7 +8,7 @@ import threading
 app = Flask(__name__)
 
 # Set your OpenAI API key
-openai.api_key = "YOUR_OPENAI_API_KEY"
+#openai.api_key = "YOUR_OPENAI_API_KEY"
 
 
 engine = pyttsx3.init()
