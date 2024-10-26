@@ -1,6 +1,6 @@
 # AI Partner Web App
 
-![AI Partner Web App](https://ibb.co/KsRS5Y5)
+![AI Partner Web App](https://i.ibb.co/GMBNdXd/Screenshot-2024-10-26-144020.png)
 
 ## Description
 
