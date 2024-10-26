@@ -34,7 +34,7 @@ AI Partner Web App is a cutting-edge web application that brings AI conversation
 
 2. Navigate to the project directory:
    ```
-   cd AI-Partner-web-app
+   cd AI_Partner
    ```
 
 3. Install the required Python packages:
