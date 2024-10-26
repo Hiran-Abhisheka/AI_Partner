@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    body, html {
+        height: 100%;
+        margin: 0;
+        font-family: 'Exo 2', sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        overflow: hidden;
+    }
+    .container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 3.5rem;
+        margin-bottom: 2rem;
+        background: linear-gradient(90deg, #00ffff, #ff00ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    #chat-container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        width: 80%;
+        max-width: 500px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #start-button {
+        background: linear-gradient(90deg, #00ffff, #ff00ff);
+        color: #1a1a2e;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    #start-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    #start-button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+    #start-button:disabled {
+        background: #4a4a4a;
+        cursor: not-allowed;
+    }
+    #status, #debug {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    #status {
+        font-size: 1.2rem;
+        color: #00ffff;
+    }
+    #debug {
+        font-size: 0.9rem;
+        color: #888;
+    }
+    .floating {
+        animation: floating 3s ease-in-out infinite;
+    }
+    @keyframes floating {
+        0% { transform: translate(0,  0px); }
+        50%  { transform: translate(0, 15px); }
+        100%   { transform: translate(0, -0px); }   
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="floating">AI Partner</h1>
+    <div id="chat-container" class="floating">
+        <button id="start-button">Start Conversation</button>
+        <p id="status"></p>
+        <p id="debug"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const startButton = document.getElementById('start-button');
+    const status = document.getElementById('status');
+    const debug = document.getElementById('debug');
+
+    $.get('/greet', function(data) {
+        console.log("Greeting received:", data);
+        status.textContent = "AI is speaking...";
+        setTimeout(() => {
+            status.textContent = "Click 'Start Conversation' and speak when prompted.";
+        }, 5000);
+    });
+
+    startButton.addEventListener('click', () => {
+        status.textContent = 'Listening... Please speak now.';
+        debug.textContent = 'Adjusting for ambient noise...';
+        startButton.disabled = true;
+
+        setTimeout(() => {
+            $.get('/listen', function(data) {
+                if (data.error) {
+                    console.error("Error:", data.error);
+                    status.textContent = data.error;
+                    debug.textContent = 'Try speaking louder or reducing background noise.';
+                    startButton.disabled = false;
+                } else {
+                    status.textContent = 'Processing...';
+                    debug.textContent = `Recognized: "${data.message}"`;
+                    $.ajax({
+                        url: '/chat',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({message: data.message}),
+                        success: function(response) {
+                            console.log("AI response received:", response);
+                            status.textContent = "AI is speaking...";
+                            setTimeout(() => {
+                                status.textContent = 'Ready for next input';
+                                startButton.disabled = false;
+                            }, 5000);
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error("Error in chat:", textStatus, errorThrown);
+                            status.textContent = 'Error occurred';
+                            debug.textContent = 'Failed to get AI response. Please try again.';
+                            startButton.disabled = false;
+                        }
+                    });
+                }
+            });
+        }, 1000);
+    });
+});
+</script>
+{% endblock %}
